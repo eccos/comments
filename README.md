@@ -18,8 +18,9 @@ Reply feature. (Need figure out how to handle interconnected comments. Probably 
 ### Comment Router  
 Endpoints | HTTP Method(s) | View
 ----------|----------------|------------
-/comment | GET, POST | GET: Blank page with input box to enter comment and Post button. POST: Post button pressed, save comment with Id and associate with User.
-/comment/:id | GET | GET: View a particular comment. Edit and Delete buttons available if User created comment. Reply button available to all.
-/comment/:id?action=edit | GET, PUT | GET: Edit button pressed, open view to edit comment with Save button. PUT: Save button pressed, save edited comment.
-/comment/:id?action=delete | DELETE | DELETE: Delete button pressed, delete comment
-/comment/:id?action=reply | GET, POST | GET: Reply button pressed, create input box and Post button below original comment. POST: Post button pressed, save comment with Id and associate with User and original comment.
+/comment | GET | Blank page with input box to enter comment 
+/comment | POST | Save comment with new Id and associate with User
+/comment/:id | GET | View a particular comment
+/comment/:id | PUT | Save edited comment
+/comment/:id | DELETE | Delete comment
+/comment/:id | POST | Save comment with new Id and associate with User and original comment Id
