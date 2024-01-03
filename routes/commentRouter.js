@@ -28,24 +28,24 @@ commentRouter
         }
       } else {
         // file exists, parse data and add new comment
-        const comments = JSON.parse(data);
-        const newId = 1 + comments.length;
-        createComment(newId, comments);
+        try {
+          const comments = JSON.parse(data);
+          const newId = 1 + comments.length;
+          createComment(newId, comments);
+        } catch (error) {
+          return next(error); // error parsing existing comments
+        }
       }
     });
 
     function createComment(id = 1, comments) {
-      try {
-        const comment = String(req.body.comment);
-        const newComment = { id, comment };
-        const data = comments ? [...comments, newComment] : [newComment];
-        fs.writeFile(commentsDataFile, JSON.stringify(data), (err) => {
-          if (err) return next(err);
-          res.status(201).send('Comment created successfully!');
-        });
-      } catch (error) {
-        return next(error); // error parsing existing comments
-      }
+      const comment = String(req.body.comment);
+      const newComment = { id, comment };
+      const data = comments ? [...comments, newComment] : [newComment];
+      fs.writeFile(commentsDataFile, JSON.stringify(data), (err) => {
+        if (err) return next(err);
+        res.status(201).send('Comment created successfully!');
+      });
     }
   })
   .put((req, res) => {
