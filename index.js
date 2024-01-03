@@ -8,6 +8,8 @@ const port = 3000;
 const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
+// allows access to /public folder if path and file ext are known
+// removed b/c i want routers to handle it
 // app.use(express.static(__dirname + '/public'));
 app.use('/comment', commentRouter);
 
