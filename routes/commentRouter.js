@@ -32,7 +32,9 @@ commentRouter
         // file exists, parse data, add new comment
         try {
           const comments = JSON.parse(data);
-          const newId = 1 + comments.length;
+          const ids = comments.map((c) => c.id);
+          const maxId = Math.max(...ids, 0);
+          const newId = maxId + 1;
           createComment(newId, comments);
         } catch (error) {
           return next(error); // error parsing existing comments
