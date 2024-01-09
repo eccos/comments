@@ -1,124 +1,120 @@
 const express = require('express');
-const commentRouter = express.Router();
+const Comment = require('../models/comment');
 const path = require('path');
-const fs = require('fs');
 
-const commentView = 'comment.html';
-const commentsDataFile = 'comments.json';
+const commentRouter = express.Router();
+const commentView = 'comments.html';
 
 commentRouter
   .route('/')
-  .get((req, res) => {
-    // GET comment entry View
-    const filePath = path.join(__dirname, `../public/${commentView}`);
-    res.sendFile(filePath);
-  })
-  .post((req, res, next) => {
-    // POST new comment
-    // verify req json is in correct format {"text": string}
-    if (!req.body.text) throw 'Error: Malformed JSON. Missing key: text';
-    if (typeof req.body.text !== 'string')
-      throw 'Error: Malformed JSON. text value is not of type String';
-
-    fs.readFile(commentsDataFile, 'utf8', (err, data) => {
-      if (err) {
-        if (err.code === 'ENOENT') {
-          // file doesn't exist, create it, add first comment
-          createComment();
-        } else {
-          return next(err); // other file read errors
-        }
-      } else {
-        // file exists, parse data, add new comment
-        try {
-          const comments = JSON.parse(data);
-          const ids = comments.map((c) => c.id);
-          const maxId = Math.max(...ids, 0);
-          const newId = maxId + 1;
-          createComment(newId, comments);
-        } catch (error) {
-          return next(error); // error parsing existing comments
-        }
-      }
-    });
-
-    function createComment(id = 1, comments) {
-      const text = String(req.body.text);
-      const newComment = { id, comment: text };
-      const data = comments ? [...comments, newComment] : [newComment];
-      fs.writeFile(commentsDataFile, JSON.stringify(data), (err) => {
-        if (err) return next(err);
-        res.status(201).send('Comment created successfully!');
-      });
+  .get((req, res, next) => {
+    if (req.accepts('html')) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/html');
+      const filePath = path.join(__dirname, `../public/${commentView}`);
+      res.sendFile(filePath);
+    } else if (req.accepts('json')) {
+      Comment.find()
+        .then((comments) => {
+          const availComments = comments.filter((comment) => !comment.deleted);
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json(availComments);
+        })
+        .catch((err) => next(err));
+    } else {
+      err = new Error('Invalid accept type');
+      err.status = 406;
+      next(err);
     }
   })
+  .post((req, res, next) => {
+    req.body.parent = null; // null = top-level comment
+    Comment.create(req.body)
+      .then((comment) => {
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(comment);
+      })
+      .catch((err) => next(err));
+  })
   .put((req, res) => {
-    res.statusCode = 403;
-    res.send('PUT operation not supported on /comment');
+    res.statusCode = 405;
+    res.json({ message: 'PUT operation not supported on /comments' });
   })
   .delete((req, res) => {
-    res.statusCode = 403;
-    res.send('DELETE operation not supported on /comment');
+    res.statusCode = 405;
+    res.json({ message: 'DELETE operation not supported on /comments' });
   });
 
 commentRouter
   .route('/:id')
   .all((req, res, next) => {
-    // read all comments for all methods to use
-    fs.readFile(commentsDataFile, (err, data) => {
-      if (err) return next(err); // file read error
-      try {
-        const comments = JSON.parse(data);
-        const comment = comments.find((c) => c.id === Number(req.params.id));
-        if (!comment || comment.deleted) {
-          return res.status(404).send('Comment not found');
+    // find comment for all methods to use
+    Comment.findById(req.params.id)
+      .then((comment) => {
+        // verify comment is valid and not a false positive like null or []
+        if (comment) {
+          if (comment.deleted) {
+            return res
+              .status(404)
+              .json({ message: `Comment ${req.params.id} not found` });
+          }
+          req.comment = comment;
+          next();
+        } else {
+          err = new Error(`Comment ${req.params.id} not found`);
+          err.status = 404;
+          return next(err);
         }
-        // attach comments to request object
-        req.comments = comments;
-        req.comment = comment;
-        next();
-      } catch (error) {
-        return next(error); // error parsing existing comments
-      }
-    });
+      })
+      .catch((err) => next(err));
   })
   .get((req, res) => {
-    // GET requested comment
-    res.send(req.comment);
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(req.comment);
   })
-  .post((req, res) => {
-    // TODO: link reply to original comment
-
-    // verify req json is in correct format {"text": string}
-    if (!req.body.text) throw 'Error: Malformed JSON. Missing key: text';
-    if (typeof req.body.text !== 'string')
-      throw 'Error: Malformed JSON. text value is not of type String';
-
-    const data = JSON.stringify(req.body);
-    res.send(`Will POST reply ${data} to comment "${req.params.id}"`);
+  .post((req, res, next) => {
+    req.body.parent = req.comment._id; // refer to top-level comment
+    Comment.create(req.body)
+      .then((reply) => {
+        req.comment.replies.push(reply._id);
+        req.comment
+          .save()
+          .then(() => {
+            res.statusCode = 201;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(reply);
+          })
+          .catch((err) => next(err));
+      })
+      .catch((err) => next(err));
   })
-  .put((req, res) => {
-    // PUT (edit/update) requested comment
-    // verify req json is in correct format {"text": string}
-    if (!req.body.text) throw 'Error: Malformed JSON. Missing key: text';
-    if (typeof req.body.text !== 'string')
-      throw 'Error: Malformed JSON. text value is not of type String';
-
-    req.comment.text = req.body.text;
-
-    fs.writeFile(commentsDataFile, JSON.stringify(req.comments), (err) => {
-      if (err) return next(err);
-      res.status(200).send('Comment updated successfully!');
-    });
+  .put((req, res, next) => {
+    if (!req.body.text) {
+      return res
+        .status(400)
+        .json({ message: 'Malformed JSON. Missing text value' });
+    }
+    req.comment.text = req.body.text; // update existing comment w/ new text
+    req.comment
+      .save()
+      .then((comment) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(comment);
+      })
+      .catch((err) => next(err));
   })
-  .delete((req, res) => {
-    // DELETE requested comment
-    req.comment.deleted = true;
-
-    fs.writeFile(commentsDataFile, JSON.stringify(req.comments), (err) => {
-      if (err) return next(err);
-      res.status(200).send('Comment deleted successfully!');
-    });
+  .delete((req, res, next) => {
+    req.comment.deleted = true; // soft-delete
+    req.comment
+      .save()
+      .then((comment) => {
+        res.status('200').json({ message: `Deleted comment ${req.params.id}` });
+      })
+      .catch((err) => next(err));
   });
 
 module.exports = commentRouter;
