@@ -71,6 +71,8 @@ commentRouter
       .catch((err) => next(err));
   })
   .get((req, res) => {
+    // TODO: if parent comment, get all replies
+    // TODO: add Accept check to return view or json
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.json(req.comment);
@@ -79,7 +81,7 @@ commentRouter
     req.body.parent = req.comment._id; // refer to top-level comment
     Comment.create(req.body)
       .then((reply) => {
-        req.comment.replies.push(reply._id);
+        // req.comment.replies.push(reply._id); // removed replies field
         req.comment
           .save()
           .then(() => {
