@@ -3,7 +3,8 @@ const Comment = require('../models/comment');
 const path = require('path');
 
 const commentRouter = express.Router();
-const commentView = 'comments.html';
+const commentsView = 'comments.html';
+const repliesView = 'replies.html';
 
 commentRouter
   .route('/')
@@ -11,7 +12,7 @@ commentRouter
     if (req.accepts('html')) {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      const filePath = path.join(__dirname, `../public/${commentView}`);
+      const filePath = path.join(__dirname, `../public/${commentsView}`);
       res.sendFile(filePath);
     } else if (req.accepts('json')) {
       Comment.find({
@@ -75,11 +76,27 @@ commentRouter
       .catch((err) => next(err));
   })
   .get((req, res) => {
-    // TODO: if parent comment, get all replies
-    // TODO: add Accept check to return view or json
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.json(req.comment);
+    if (req.accepts('html')) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      const filePath = path.join(__dirname, `../public/${repliesView}`);
+      res.sendFile(filePath);
+    } else if (req.accepts('json')) {
+      Comment.find({
+        parent: req.params.id,
+        $or: [{ deleted: { $exists: false } }, { deleted: false }],
+      })
+        .then((replies) => {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.json([req.comment, ...replies]);
+        })
+        .catch((err) => next(err));
+    } else {
+      err = new Error('Invalid accept type');
+      err.status = 406;
+      next(err);
+    }
   })
   .post((req, res, next) => {
     req.body.parent = req.comment._id; // refer to top-level comment
