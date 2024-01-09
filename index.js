@@ -10,7 +10,8 @@ const hostname = 'localhost';
 const serverPort = 3000;
 const serverUrl = `http://${hostname}:${serverPort}/`;
 const dbPort = 27017;
-const dbUrl = `mongodb://${hostname}:${dbPort}/nucampsite`;
+const db = 'commentsApp';
+const dbUrl = `mongodb://${hostname}:${dbPort}/${db}`;
 
 const connect = mongoose.connect(dbUrl);
 
