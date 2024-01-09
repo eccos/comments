@@ -10,7 +10,7 @@ commentRouter
   .get((req, res, next) => {
     if (req.accepts('html')) {
       res.statusCode = 200;
-      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
       const filePath = path.join(__dirname, `../public/${commentView}`);
       res.sendFile(filePath);
     } else if (req.accepts('json')) {
@@ -18,7 +18,7 @@ commentRouter
         .then((comments) => {
           const availComments = comments.filter((comment) => !comment.deleted);
           res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.json(availComments);
         })
         .catch((err) => next(err));
@@ -33,7 +33,7 @@ commentRouter
     Comment.create(req.body)
       .then((comment) => {
         res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.json(comment);
       })
       .catch((err) => next(err));
@@ -74,7 +74,7 @@ commentRouter
     // TODO: if parent comment, get all replies
     // TODO: add Accept check to return view or json
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.json(req.comment);
   })
   .post((req, res, next) => {
@@ -86,7 +86,7 @@ commentRouter
           .save()
           .then(() => {
             res.statusCode = 201;
-            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.json(reply);
           })
           .catch((err) => next(err));
@@ -104,7 +104,7 @@ commentRouter
       .save()
       .then((comment) => {
         res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.json(comment);
       })
       .catch((err) => next(err));
