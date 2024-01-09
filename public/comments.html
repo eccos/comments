@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comments</title>
-</head>
-<body>
-  <h3>Post Comment</h3>
-  <textarea name="commentText" id="commentText" title="Enter Comment" placeholder="Enter Comment"></textarea>
-  <button type="submit" id="postBtn" onclick="postComment()">Post</button>
-  <p id="postStatus"></p>
-  <h3>Comments</h3>
-  <div id="comments">Loading...</div>
-  <script src="./scripts/comments.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comments</title>
+  </head>
+  <body>
+    <h3>Post Comment</h3>
+    <textarea
+      name="commentText"
+      id="commentText"
+      title="Enter Comment"
+      placeholder="Enter Comment"
+    ></textarea>
+    <button type="submit" id="postBtn" onclick="postComment()">Post</button>
+    <p id="postStatus"></p>
+    <h3>Comments</h3>
+    <div id="comments">Loading...</div>
+    <script src="./scripts/comments.js" type="module"></script>
+  </body>
 </html>
