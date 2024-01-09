@@ -1,6 +1,4 @@
-const hostname = 'localhost';
-const port = 3000;
-const baseUrl = `http://${hostname}:${port}`;
+import { baseUrl } from '../shared/baseUrl.js';
 const commentsApi = 'comments';
 const commentsUrl = `${baseUrl}/${commentsApi}`;
 
