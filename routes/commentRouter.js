@@ -11,7 +11,6 @@ commentRouter
   .get((req, res, next) => {
     if (req.accepts('html')) {
       res.statusCode = 200;
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
       const filePath = path.join(__dirname, `../public/${commentsView}`);
       res.sendFile(filePath);
     } else if (req.accepts('json')) {
@@ -23,7 +22,6 @@ commentRouter
         .limit(50)
         .then((comments) => {
           res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.json(comments);
         })
         .catch((err) => next(err));
@@ -38,7 +36,6 @@ commentRouter
     Comment.create(req.body)
       .then((comment) => {
         res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.json(comment);
       })
       .catch((err) => next(err));
@@ -78,7 +75,6 @@ commentRouter
   .get((req, res) => {
     if (req.accepts('html')) {
       res.statusCode = 200;
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
       const filePath = path.join(__dirname, `../public/${repliesView}`);
       res.sendFile(filePath);
     } else if (req.accepts('json')) {
@@ -88,7 +84,6 @@ commentRouter
       })
         .then((replies) => {
           res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.json([req.comment, ...replies]);
         })
         .catch((err) => next(err));
@@ -107,7 +102,6 @@ commentRouter
           .save()
           .then(() => {
             res.statusCode = 201;
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.json(reply);
           })
           .catch((err) => next(err));
@@ -125,7 +119,6 @@ commentRouter
       .save()
       .then((comment) => {
         res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.json(comment);
       })
       .catch((err) => next(err));

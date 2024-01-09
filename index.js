@@ -35,7 +35,6 @@ app.use('/comments', commentRouter);
 
 app.use((req, res) => {
   res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end('This is an Express Server');
 });
 
