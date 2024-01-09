@@ -16,7 +16,9 @@ commentRouter
     } else if (req.accepts('json')) {
       Comment.find()
         .then((comments) => {
-          const availComments = comments.filter((comment) => !comment.deleted);
+          const availComments = comments.filter(
+            (comment) => !comment.parent && !comment.deleted
+          );
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.json(availComments);
