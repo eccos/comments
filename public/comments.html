@@ -7,8 +7,11 @@
 </head>
 <body>
   <h3>Post Comment</h3>
-  <textarea name="comment" id="comment"></textarea>
-  <button type="submit">Post</button>
-  <p>Post Status: Success/Error</p>
+  <textarea name="commentText" id="commentText" title="Enter Comment" placeholder="Enter Comment"></textarea>
+  <button type="submit" id="postBtn" onclick="postComment()">Post</button>
+  <p id="postStatus"></p>
+  <h3>Comments</h3>
+  <div id="comments">TODO: Load comments here</div>
+  <script src="./scripts/comments.js"></script>
 </body>
 </html>
