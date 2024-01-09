@@ -14,14 +14,16 @@ commentRouter
       const filePath = path.join(__dirname, `../public/${commentView}`);
       res.sendFile(filePath);
     } else if (req.accepts('json')) {
-      Comment.find()
+      Comment.find({
+        parent: null,
+        $or: [{ deleted: { $exists: false } }, { deleted: false }],
+      })
+        .sort({ updatedAt: -1 })
+        .limit(50)
         .then((comments) => {
-          const availComments = comments.filter(
-            (comment) => !comment.parent && !comment.deleted
-          );
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(availComments);
+          res.json(comments);
         })
         .catch((err) => next(err));
     } else {
