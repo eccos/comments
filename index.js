@@ -24,11 +24,22 @@ const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
+
+// remove trailing slash
+app.use((req, res, next) => {
+  if (req.path.slice(-1) === '/' && req.path.length > 1) {
+    const query = req.url.slice(req.path.length);
+    res.redirect(301, req.path.slice(0, -1) + query);
+  } else {
+    next();
+  }
+});
+
 // allows access to /public folder if path and file ext are known
 // removed b/c i want routers to handle it.
 // re-added b/c it's needed for express to serve files w/ the correct content-type
 // w/o it, express serves an html file correctly as 'text/html', but...
-// the js file it links is also served as 'text/html' instead of 'text/javascript'
+// the js file it links is also served as 'html' instead of 'javascript'
 app.use(express.static(__dirname + '/public'));
 
 app.use('/comments', commentRouter);
