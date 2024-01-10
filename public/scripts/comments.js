@@ -1,8 +1,8 @@
-import { baseUrl } from '../shared/baseUrl.js';
-const commentsApi = location.pathname; // /comments
-const commentsUrl = baseUrl + commentsApi;
+const commentsPath = '/comments';
+const commentsApi = '/api/comments';
 
 const commentsElem = document.getElementById('comments');
+document.getElementById('postBtn').addEventListener('click', postComment);
 
 // TODO: call on a timer to get new comments
 // if new comments, show message/icon to indicate a user can refresh
@@ -13,7 +13,7 @@ getComments(); // get comments and append to screen
 
 async function getComments() {
   try {
-    const res = await fetch(commentsUrl, {
+    const res = await fetch(commentsApi, {
       method: 'GET',
       headers: {
         accept: 'application/json',
@@ -34,7 +34,7 @@ async function getComments() {
   function updateDOM(comments) {
     comments.forEach((comment) => {
       const linkWrapper = document.createElement('a');
-      linkWrapper.href = `${commentsApi}/${comment._id}`;
+      linkWrapper.href = `${commentsPath}/${comment._id}`;
 
       const container = document.createElement('div');
       const styleObj = {
@@ -54,7 +54,6 @@ async function getComments() {
   }
 }
 
-document.getElementById('postBtn').addEventListener('click', postComment);
 async function postComment() {
   const commentText = document.getElementById('commentText');
   const postStatus = document.getElementById('postStatus');
@@ -71,7 +70,7 @@ async function postComment() {
   const comment = { text };
 
   try {
-    const res = await fetch(commentsUrl, {
+    const res = await fetch(commentsApi, {
       method: 'POST',
       headers: {
         accept: 'application/json',

@@ -1,8 +1,10 @@
 const express = require('express');
+const path = require('path');
 const logger = require('morgan');
 const createError = require('http-errors');
 
 const commentRouter = require('./routes/commentRouter');
+const commentApiRouter = require('./routesApi/commentApiRouter');
 
 const mongoose = require('mongoose');
 
@@ -40,9 +42,10 @@ app.use((req, res, next) => {
 // re-added b/c it's needed for express to serve files w/ the correct content-type
 // w/o it, express serves an html file correctly as 'text/html', but...
 // the js file it links is also served as 'html' instead of 'javascript'
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/comments', commentRouter);
+app.use('/api/comments', commentApiRouter);
 
 app.use((req, res) => {
   res.statusCode = 200;

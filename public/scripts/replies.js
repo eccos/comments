@@ -1,8 +1,10 @@
-import { baseUrl } from '../shared/baseUrl.js';
-const repliesApi = location.pathname; // /comments/:id
-const repliesUrl = baseUrl + repliesApi;
+const pathParts = location.pathname.split('/');
+const parentCommentId = pathParts[pathParts.length - 1];
+
+const repliesApi = '/api/comments';
 
 const repliesElem = document.getElementById('replies');
+document.getElementById('postBtn').addEventListener('click', postReply);
 
 // TODO: call on a timer to get new replies
 // if new replies, show message/icon to indicate a user can refresh
@@ -11,7 +13,7 @@ getReplies(); // get replies and append to screen
 
 async function getReplies() {
   try {
-    const res = await fetch(repliesUrl, {
+    const res = await fetch(`${repliesApi}/${parentCommentId}`, {
       method: 'GET',
       headers: {
         accept: 'application/json',
@@ -49,7 +51,7 @@ async function getReplies() {
         }
 
         try {
-          const res = await fetch(`/comments/${reply._id}`, {
+          const res = await fetch(`${repliesApi}/${reply._id}`, {
             method: 'DELETE',
             headers: {
               accept: 'application/json',
@@ -59,9 +61,7 @@ async function getReplies() {
           if (res.ok) {
             alert('Comment Deleted');
 
-            const pathParts = repliesApi.split('/');
-            const parentId = pathParts[pathParts.length - 1];
-            if (reply._id === parentId) {
+            if (reply._id === parentCommentId) {
               location.replace('/comments');
             } else {
               container.style.display = 'none';
@@ -106,7 +106,6 @@ async function getReplies() {
   }
 }
 
-document.getElementById('postBtn').addEventListener('click', postReply);
 async function postReply() {
   const replyText = document.getElementById('replyText');
   const postStatus = document.getElementById('postStatus');
@@ -123,7 +122,7 @@ async function postReply() {
   const reply = { text };
 
   try {
-    const res = await fetch(repliesUrl, {
+    const res = await fetch(`${repliesApi}/${parentCommentId}`, {
       method: 'POST',
       headers: {
         accept: 'application/json',
