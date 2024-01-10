@@ -55,6 +55,7 @@ function getComments() {
   }
 }
 
+document.getElementById('postBtn').addEventListener('click', postComment);
 function postComment() {
   const commentText = document.getElementById('commentText');
   const postStatus = document.getElementById('postStatus');
