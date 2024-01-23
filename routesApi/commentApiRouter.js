@@ -7,7 +7,7 @@ commentApiRouter
   .route('/')
   .get((req, res, next) => {
     Comment.find({
-      parent: null,
+      parent: null, // null = top-level comment
       $or: [{ deleted: { $exists: false } }, { deleted: false }],
     })
       .sort({ updatedAt: -1 })
@@ -19,8 +19,10 @@ commentApiRouter
       .catch((err) => next(err));
   })
   .post((req, res, next) => {
-    req.body.parent = null; // null = top-level comment
-    Comment.create(req.body)
+    Comment.create({
+      parent: null, // null = top-level comment
+      text: req.body.text,
+    })
       .then((comment) => {
         res.statusCode = 201;
         res.json(comment);
@@ -71,8 +73,10 @@ commentApiRouter
       .catch((err) => next(err));
   })
   .post((req, res, next) => {
-    req.body.parent = req.comment._id; // refer to top-level comment
-    Comment.create(req.body)
+    Comment.create({
+      parent: req.comment._id, // refer to top-level comment
+      text: req.body.text,
+    })
       .then((reply) => {
         // req.comment.replies.push(reply._id); // removed replies field
         req.comment
@@ -86,19 +90,20 @@ commentApiRouter
       .catch((err) => next(err));
   })
   .put((req, res, next) => {
-    if (!req.body.text) {
-      return res
-        .status(400)
-        .json({ message: 'Malformed JSON. Missing text value' });
+    if (req.body.text) {
+      req.comment.text = req.body.text; // update existing comment w/ new text
+      req.comment
+        .save()
+        .then((comment) => {
+          res.statusCode = 200;
+          res.json(comment);
+        })
+        .catch((err) => next(err));
+    } else {
+      err = new Error('Malformed JSON. Missing text value');
+      err.status = 400;
+      return next(err);
     }
-    req.comment.text = req.body.text; // update existing comment w/ new text
-    req.comment
-      .save()
-      .then((comment) => {
-        res.statusCode = 200;
-        res.json(comment);
-      })
-      .catch((err) => next(err));
   })
   .delete((req, res, next) => {
     req.comment.deleted = true; // soft-delete
